@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세종 빈칸 프로젝트 — AI 공실 용도진단·매칭 MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1c1a17; --surface:#262320; --surface2:#2f2b27; --line:#3b362f;
+    --txt:#f3ede4; --muted:#9a917f;
+    --pop:#ff7a1a; --work:#ffb347; --live:#e85d4a;
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans KR',sans-serif;font-weight:300;line-height:1.65;
+    background-image:radial-gradient(rgba(255,122,26,.05) 1px, transparent 1px);background-size:26px 26px;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+  h1,h2,h3,.jua{font-family:'Jua',sans-serif;font-weight:400;letter-spacing:.01em}
+  a{color:var(--pop)}
+
+  /* hero */
+  header{padding:54px 0 30px;border-bottom:1px solid var(--line)}
+  .eyebrow{color:var(--pop);font-size:.85rem;letter-spacing:.18em;font-weight:500;margin-bottom:14px}
+  h1{font-size:clamp(2rem,5.4vw,3.3rem);line-height:1.2}
+  h1 .blank{display:inline-block;border:2px dashed var(--pop);border-radius:8px;padding:0 .35em;color:var(--pop)}
+  .tagline{margin-top:14px;color:var(--muted);max-width:620px;font-size:1.02rem}
+  .stats{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px}
+  .stat b{font-family:'Jua';font-size:1.5rem;color:var(--txt);display:block;line-height:1.15}
+  .stat span{font-size:.8rem;color:var(--muted)}
+  .stat b em{font-style:normal;color:var(--pop)}
+
+  /* board section */
+  section{padding:44px 0}
+  .sec-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  h2{font-size:1.5rem}
+  .sec-sub{color:var(--muted);font-size:.92rem;margin-bottom:22px}
+  .fillcount{margin-left:auto;font-size:.9rem;color:var(--muted)}
+  .fillcount b{color:var(--pop);font-family:'Jua';font-size:1.2rem}
+
+  .board-area{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+  @media(max-width:840px){.board-area{grid-template-columns:1fr}}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .cell{aspect-ratio:1/1;border-radius:var(--radius);border:2px dashed var(--line);background:var(--surface);
+    cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;position:relative;
+    transition:transform .15s,border-color .15s,box-shadow .15s;text-align:left;color:var(--txt);font:inherit}
+  .cell:hover,.cell:focus-visible{transform:translateY(-3px);border-color:var(--pop);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  .cell:focus-visible{outline:2px solid var(--pop);outline-offset:3px}
+  .cell .dong{font-size:.72rem;color:var(--muted)}
+  .cell .bname{font-family:'Jua';font-size:.95rem;line-height:1.25}
+  .cell .vac{position:absolute;top:9px;left:10px;font-size:.66rem;color:var(--muted);letter-spacing:.06em}
+  .cell.selected{border-style:solid;border-color:var(--pop)}
+  .cell.filled{border-style:solid;cursor:default}
+  .cell.filled .vac{color:inherit}
+  .cell.filled.t-pop{background:linear-gradient(160deg,rgba(255,122,26,.28),rgba(255,122,26,.1));border-color:var(--pop)}
+  .cell.filled.t-work{background:linear-gradient(160deg,rgba(255,179,71,.26),rgba(255,179,71,.09));border-color:var(--work)}
+  .cell.filled.t-live{background:linear-gradient(160deg,rgba(232,93,74,.26),rgba(232,93,74,.09));border-color:var(--live)}
+  .cell .badge{position:absolute;top:8px;right:8px;font-size:.68rem;padding:2px 8px;border-radius:99px;display:none}
+  .cell.filled .badge{display:block}
+  .t-pop .badge{background:var(--pop);color:#1c1a17}
+  .t-work .badge{background:var(--work);color:#1c1a17}
+  .t-live .badge{background:var(--live);color:#fff}
+
+  /* panel */
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;min-height:420px}
+  .panel .placeholder{color:var(--muted);text-align:center;padding:120px 10px;font-size:.95rem}
+  .panel h3{font-size:1.2rem;margin-bottom:2px}
+  .panel .loc{color:var(--muted);font-size:.85rem;margin-bottom:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+  .chip{font-size:.74rem;background:var(--surface2);border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--muted)}
+  .chip b{color:var(--txt);font-weight:500}
+  .diag-label{font-size:.8rem;letter-spacing:.14em;color:var(--pop);margin:4px 0 10px;font-weight:500}
+  .bar-row{display:grid;grid-template-columns:74px 1fr 44px;gap:10px;align-items:center;margin-bottom:9px;font-size:.86rem}
+  .bar{height:9px;background:var(--surface2);border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .bar-row .score{font-family:'Jua';text-align:right}
+  .verdict{margin-top:16px;background:var(--surface2);border-left:3px solid var(--pop);border-radius:8px;padding:12px 14px;font-size:.9rem}
+  .verdict .v-title{font-family:'Jua';margin-bottom:3px}
+  .match-btn{margin-top:18px;width:100%;border:none;border-radius:10px;padding:13px;font-family:'Jua';font-size:1.02rem;
+    background:var(--pop);color:#1c1a17;cursor:pointer;transition:filter .15s}
+  .match-btn:hover{filter:brightness(1.08)}
+  .match-btn:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+  .match-result{margin-top:14px;font-size:.88rem;display:none}
+  .match-result.show{display:block;animation:pop .35s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .match-result ul{list-style:none}
+  .match-result li{padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:7px;background:var(--bg)}
+  .match-result li b{font-weight:500}
+  .match-result li span{color:var(--muted);font-size:.8rem;display:block}
+
+  /* tracks */
+  .tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:720px){.tracks{grid-template-columns:1fr}}
+  .track{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;border-top:4px solid var(--line)}
+  .track.tp{border-top-color:var(--pop)} .track.tw{border-top-color:var(--work)} .track.tl{border-top-color:var(--live)}
+  .track h3{font-size:1.06rem;margin-bottom:6px}
+  .track p{font-size:.86rem;color:var(--muted)}
+  .track .when{font-size:.72rem;letter-spacing:.12em;color:var(--muted);margin-bottom:8px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--muted);font-size:.8rem}
+  footer .jua{color:var(--txt);font-size:.95rem;margin-bottom:6px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">제1회 세종특별자치시 AI 혁신 경진대회 · 출품작 데모</div>
+    <h1>전국에서 가장 <span class="blank">비어 있는</span> 도시를,<br>전국에서 가장 <span class="blank">채울 준비가 된</span> 도시로.</h1>
+    <p class="tagline">낙화의 불빛, 도서관의 등불, 수목원의 햇살 — 세종엔 이미 세 개의 빛이 있습니다.
+      꺼져 있는 건 네 번째 빛, 맛집과 쇼핑의 거리. 아래 빈칸(공실)을 눌러 AI가 불을 켜는 과정을 체험해 보세요.</p>
+    <div class="stats">
+      <div class="stat"><b>25.8<em>%</em></b><span>중대형 상가 공실률 · 전국 최고</span></div>
+      <div class="stat"><b>230만 원</b><span>1인당 카드 사용액 · 전국 최고</span></div>
+      <div class="stat"><b>전국 최저</b><span>총 카드 사용액 · 소비 역외 유출</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>도시상권 디지털트윈 — 공실 보드</h2>
+      <div class="fillcount">채워진 빈칸 <b id="fillN">0</b> / 12</div>
+    </div>
+    <p class="sec-sub">시뮬레이션 데이터 12건 · 칸을 누르면 AI가 용도를 진단하고, 채웠을 때의 1년 후를 예측합니다</p>
+    <div class="board-area">
+      <div class="grid" id="grid" role="list"></div>
+      <div class="panel" id="panel">
+        <div class="placeholder">← 빈칸(공실)을 선택하세요<br><br>건축물 조건과 상권 데이터를 분석해<br>팝업 · 창업 · 주거 적합도를 진단합니다</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2 style="margin-bottom:18px">하나의 디지털트윈, 단계적 확장</h2>
+    <div class="tracks">
+      <div class="track tp"><div class="when">실행 트랙 · 즉시</div><h3>빈칸 팝업</h3><p>용도변경이 필요 없는 1층 가로변 공실에 유명 점포·로컬 크리에이터의 단기 팝업을 매칭합니다. 거리에 활력이 가장 빨리 돌아옵니다.</p></div>
+      <div class="track tw"><div class="when">확장 1 · 검증 후</div><h3>빈칸 워크</h3><p>상층부 사무형 공실을 GovTech·AI 스타트업의 일터로. 중앙부처·국책연구단지 인접이라는 세종만의 비교우위를 입주 유인으로 씁니다.</p></div>
+      <div class="track tl"><div class="when">확장 2 · 중장기</div><h3>빈칸 리브</h3><p>발령 공무원의 단기 스테이, 낙화축제·국립도서관·국립수목원 방문객의 여행자 스테이, 청년·신혼 리모델링 임대까지 — 머물 곳을 빈 건물로 복원합니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="jua">세종 빈칸 프로젝트</div>
+    본 페이지는 경진대회 제출용 프로토타입 데모이며, 공실·상권 수치는 시뮬레이션 데이터입니다.
+    실제 서비스는 건축물대장·유동인구·카드매출·대중교통 접근성 등 공공데이터 연계를 전제로 설계되었습니다.
+  </div>
+</footer>
+
+<script>
+// ---------- 시뮬레이션 데이터 (생활권별 공실 12건) ----------
+const BUILDINGS = [
+  {dong:"나성동", name:"어반아트리움 1층 105호", floor:1, area:42,  months:18, foot:86, brt:92, rent:38, street:true},
+  {dong:"나성동", name:"중앙타워 7층 전체",     floor:7, area:310, months:26, foot:74, brt:95, rent:21, street:false},
+  {dong:"어진동", name:"세종포레 2층 201호",    floor:2, area:88,  months:11, foot:69, brt:88, rent:27, street:false},
+  {dong:"도담동", name:"도램마을상가 1층 코너", floor:1, area:55,  months:9,  foot:78, brt:71, rent:33, street:true},
+  {dong:"새롬동", name:"새롬프라자 5층 전층",   floor:5, area:260, months:31, foot:58, brt:76, rent:18, street:false},
+  {dong:"보람동", name:"호수프라자 1층 112호",  floor:1, area:38,  months:14, foot:71, brt:83, rent:30, street:true},
+  {dong:"대평동", name:"대평스퀘어 3층 일부",   floor:3, area:140, months:22, foot:52, brt:90, rent:19, street:false},
+  {dong:"소담동", name:"소담힐타워 6~8층",      floor:6, area:480, months:34, foot:44, brt:68, rent:15, street:false},
+  {dong:"고운동", name:"고운프라자 1층 103호",  floor:1, area:47,  months:7,  foot:62, brt:55, rent:25, street:true},
+  {dong:"아름동", name:"아름상가 2층 전체",     floor:2, area:170, months:19, foot:57, brt:62, rent:20, street:false},
+  {dong:"조치원읍", name:"역전상가 1층 본동",   floor:1, area:64,  months:24, foot:65, brt:48, rent:17, street:true},
+  {dong:"반곡동", name:"반곡타워 9층 전층",     floor:9, area:520, months:29, foot:41, brt:79, rent:14, street:false},
+];
+
+// ---------- "AI" 용도진단: 가중 스코어링 (데모용 규칙 기반) ----------
+function diagnose(b){
+  const pop  = Math.round( (b.street?28:6) + (b.floor===1?22:4) + b.foot*0.34 + b.brt*0.12 + Math.min(b.months,24)*0.3 );
+  const work = Math.round( (b.floor>=2?24:8) + (b.area>=80?18:8) + b.brt*0.30 + (100-b.rent)*0.14 + Math.min(b.months,30)*0.2 );
+  const live = Math.round( (b.floor>=4?22:5) + (b.area>=200?20:6) + (100-b.rent)*0.22 + b.brt*0.18 + Math.min(b.months,36)*0.35 );
+  const clamp = v => Math.max(15, Math.min(97, v));
+  const s = {pop:clamp(pop), work:clamp(work), live:clamp(live)};
+  const best = Object.entries(s).sort((a,b2)=>b2[1]-a[1])[0][0];
+  return {s, best};
+}
+// ---------- 디지털트윈: 용도별 1년 후 시뮬레이션 (데모용 예측치) ----------
+function simulate(b, best){
+  if(best==='pop'){
+    const sales = Math.round(b.foot*0.32*b.area/10)*10;          // 월 예상 매출(만원)
+    const footUp = Math.round(6 + b.foot*0.11);                   // 유동인구 증가율
+    const tax = Math.round(sales*12*0.013/10)*10;                 // 연 세수 기여(만원)
+    return [
+      {k:'월 예상 매출', v: sales.toLocaleString()+'만 원'},
+      {k:'구역 유동인구', v:'+'+footUp+'%'},
+      {k:'연 세수 기여(추정)', v:'약 '+tax.toLocaleString()+'만 원'}];
+  }
+  if(best==='work'){
+    const jobs = Math.ceil(b.area/15);
+    const footUp = Math.round(3 + b.brt*0.06);
+    return [
+      {k:'예상 고용 효과', v: jobs+'명 입주'},
+      {k:'점심·인근 상권 유동', v:'+'+footUp+'%'},
+      {k:'공공 실증 과제 연계', v:'연 2건 이상'}];
+  }
+  const rooms = Math.max(4, Math.round(b.area/30));
+  const stays = Math.round(rooms*365*0.62);
+  const spend = Math.round(stays*7/100)/10;
+  return [
+    {k:'전환 가능 호실', v: rooms+'실'},
+    {k:'연 체류 인원(예측)', v: stays.toLocaleString()+'명'},
+    {k:'연 방문 소비 유발', v:'약 '+spend+'억 원'}];
+}
+
+const TRACK = {
+  pop:{label:"팝업", cls:"t-pop", color:"var(--pop)",
+    why:b=>`1층 가로변 · 유동인구 지수 ${b.foot} — 단기 팝업으로 즉시 활성화 가능한 입지입니다.`,
+    matches:b=>[
+      {n:"대전 전국구 베이커리 B사", d:"세종 1호 팝업 후보 · 희망 기간 4주"},
+      {n:"낙화축제 주간 야간 마켓 팝업", d:"축제 방문객 동선 연계 · 2주"},
+      {n:"국립도서관 연계 독립서점 팝업", d:"북토크 병행 · 희망 기간 6주"},
+      {n:"수목원 연계 플라워·가드닝 팝업", d:"주말 워크숍형 · 희망 기간 8주"}]},
+  work:{label:"창업", cls:"t-work", color:"var(--work)",
+    why:b=>`상층 사무형 ${b.area}㎡ · BRT 접근성 ${b.brt} — 부처 인접 GovTech 입주에 적합합니다.`,
+    matches:b=>[
+      {n:"교통데이터 분석 스타트업 T사", d:"이응버스 수요예측 실증 희망 · 6인"},
+      {n:"행정문서 AI 자동화 G사", d:"공공조달 진출 준비 · 4인"},
+      {n:"시민참여 플랫폼 C사", d:"스마트시티 실증 연계 희망 · 8인"}]},
+  live:{label:"주거", cls:"t-live", color:"var(--live)",
+    why:b=>`공실 ${b.months}개월 · ${b.area}㎡ 통임대 가능 — 단기 스테이/리모델링 임대 전환 후보입니다.`,
+    matches:b=>[
+      {n:"전입 공무원 단기 스테이 수요", d:"7월 정기인사 예측 수요 23건"},
+      {n:"낙화축제·수목원 방문객 스테이", d:"축제 주간 체류 예측 수요 47건"},
+      {n:"청년·신혼 리모델링 임대", d:"LH 매입약정형 검토 후보"}]}
+};
+
+// ---------- 렌더링 ----------
+const grid = document.getElementById('grid');
+const panel = document.getElementById('panel');
+let filled = 0;
+
+BUILDINGS.forEach((b,i)=>{
+  const c = document.createElement('button');
+  c.className = 'cell'; c.setAttribute('role','listitem');
+  c.innerHTML = `<span class="vac">공실 ${b.months}개월</span><span class="badge"></span>
+    <span class="dong">${b.dong}</span><span class="bname">${b.name}</span>`;
+  c.addEventListener('click',()=>select(i,c));
+  grid.appendChild(c);
+});
+
+function select(i, cellEl){
+  if(cellEl.classList.contains('filled')) return;
+  document.querySelectorAll('.cell.selected').forEach(e=>e.classList.remove('selected'));
+  cellEl.classList.add('selected');
+  const b = BUILDINGS[i];
+  const {s, best} = diagnose(b);
+  const t = TRACK[best];
+  panel.innerHTML = `
+    <h3>${b.name}</h3><div class="loc">${b.dong} · 시뮬레이션 데이터</div>
+    <div class="chips">
+      <span class="chip">층수 <b>${b.floor}F</b></span>
+      <span class="chip">면적 <b>${b.area}㎡</b></span>
+      <span class="chip">공실 <b>${b.months}개월</b></span>
+      <span class="chip">유동인구 <b>${b.foot}</b></span>
+      <span class="chip">BRT 접근 <b>${b.brt}</b></span>
+      <span class="chip">임대료 지수 <b>${b.rent}</b></span>
+    </div>
+    <div class="diag-label">AI 용도 적합도 진단</div>
+    ${barRow('팝업', s.pop, 'var(--pop)')}
+    ${barRow('창업', s.work, 'var(--work)')}
+    ${barRow('주거', s.live, 'var(--live)')}
+    <div class="verdict" style="border-left-color:${t.color}">
+      <div class="v-title">추천: ${t.label} 트랙</div>${t.why(b)}
+    </div>
+    <div class="diag-label" style="margin-top:16px">디지털트윈 시뮬레이션 — 이 빈칸을 채우면, 1년 후</div>
+    <div class="chips">${simulate(b,best).map(m=>`<span class="chip">${m.k} <b>${m.v}</b></span>`).join('')}</div>
+    <button class="match-btn" id="matchBtn">이 빈칸, ${t.label}으로 채우기</button>
+    <div class="match-result" id="matchRes">
+      <div class="diag-label" style="color:${t.color}">매칭 후보</div>
+      <ul>${t.matches(b).map(m=>`<li><b>${m.n}</b><span>${m.d}</span></li>`).join('')}</ul>
+    </div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    panel.querySelectorAll('.bar i').forEach(el=>{ el.style.width = el.dataset.w + '%'; });
+  }));
+  document.getElementById('matchBtn').addEventListener('click',()=>{
+    cellEl.classList.remove('selected');
+    cellEl.classList.add('filled', t.cls);
+    cellEl.querySelector('.badge').textContent = t.label;
+    document.getElementById('matchRes').classList.add('show');
+    const btn = document.getElementById('matchBtn');
+    btn.disabled = true; btn.textContent = '매칭 완료 — 빈칸이 채워졌습니다';
+    filled++; document.getElementById('fillN').textContent = filled;
+  });
+}
+function barRow(label, val, color){
+  return `<div class="bar-row"><span>${label}</span>
+    <div class="bar"><i data-w="${val}" style="background:${color}"></i></div>
+    <span class="score">${val}</span></div>`;
+}
+</script>
+</body>
+</html>
