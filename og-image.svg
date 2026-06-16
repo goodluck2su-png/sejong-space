@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="78%" cy="34%" r="58%">
+      <stop offset="0%" stop-color="#F4B23E" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#F4B23E" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#14161C"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <text x="80" y="148" font-family="'IBM Plex Mono',monospace" font-size="25" letter-spacing="7" fill="#F4B23E">SEJONG AI · TRACK 2</text>
+
+  <text x="76" y="268" font-family="'Pretendard',sans-serif" font-size="74" fill="#EAE6DC" font-weight="700" letter-spacing="-2">세종 빈칸 프로젝트</text>
+
+  <text x="80" y="344" font-family="'Pretendard',sans-serif" font-size="38" fill="#EAE6DC">AI 도시상권 디지털트윈 — 추천이 아닌 <tspan fill="#F4B23E" font-weight="700">예측</tspan></text>
+
+  <text x="80" y="408" font-family="'Pretendard',sans-serif" font-size="26" fill="#8B8D98">공실(도시의 빈칸)을 AI가 분석해 채웠을 때의 1년 후를 시뮬레이션합니다</text>
+
+  <!-- 네 개의 빛 -->
+  <g font-family="'Pretendard',sans-serif" font-size="24" fill="#8B8D98">
+    <text x="80" y="520">🎆 낙화축제</text>
+    <text x="280" y="520">📖 국립세종도서관</text>
+    <text x="560" y="520">🌿 국립세종수목원</text>
+  </g>
+  <g transform="translate(830,496)">
+    <rect x="0" y="0" width="290" height="36" rx="9" fill="none" stroke="#F4B23E" stroke-width="2" stroke-dasharray="6 5"/>
+    <text x="145" y="25" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="20" fill="#F4B23E">+ 꺼진 네 번째 빛</text>
+  </g>
+</svg>

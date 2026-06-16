@@ -1,0 +1,22 @@
+# 비밀값 — 절대 커밋 금지
+.env
+.env.*
+*.local
+.vercel
+
+# 의존성 / 빌드
+node_modules/
+dist/
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 작업용 파일 (레포에 올리지 않음)
+files/
+files.zip
+CLAUDE_TASK_*.md
+DESIGN_TASK_*.md
+design_reference.html
