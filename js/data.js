@@ -8,9 +8,10 @@
 //    service_role 키는 절대 넣지 마세요. (schema.sql 의 RLS 설정 참고)
 // ============================================================
 (function(){
-  // 👇 Supabase 프로젝트 값으로 교체하세요. 비워두면 오프라인(로컬 시드) 모드로 동작합니다.
-  const SUPABASE_URL  = "";   // 예: https://xxxx.supabase.co
-  const SUPABASE_ANON = "";   // 예: eyJhbGciOi... (anon public key)
+  // 👇 Supabase 프로젝트 값. 비워두면 오프라인(로컬 시드) 모드로 동작합니다.
+  // ⚠️ createClient 에는 /rest/v1/ 없는 베이스 Project URL 을 넣습니다.
+  const SUPABASE_URL  = "https://vijhehsghpcbxwfjtfzf.supabase.co";
+  const SUPABASE_ANON = "sb_publishable_d-GZ94IZ8lcL1zdK8sBUNw_I5fONRhR";   // publishable(=anon/public) 키. service_role 아님.
 
   const configured = !!(SUPABASE_URL && SUPABASE_ANON && window.supabase);
   let client = null;
